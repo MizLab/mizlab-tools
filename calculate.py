@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 import argparse
 import json
 import os
 import re
-from typing import (Any, Dict, Iterable, Iterator, List, Literal, Optional, Union)
+from typing import (Any, Dict, Iterable, Iterator, List, Literal, Optional,
+                    Union)
 
 from Bio import SeqIO, SeqRecord
 
