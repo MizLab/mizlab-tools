@@ -4,17 +4,18 @@ import argparse
 import json
 import os
 import re
-from typing import (Any, Dict, Iterable, Iterator, List, Literal, Optional,
-                    Union)
+from typing import (Dict, Iterable, Iterator, List, Literal, Optional, Tuple,
+                    TypeVar, Union)
 
 from Bio import SeqIO, SeqRecord
 
 OVERHANG = Literal["before", "after", "both"]
+T = TypeVar("T")
 
 
-def window_search(target: Iterable[Any],
+def window_search(target: Iterable[T],
                   size: int,
-                  overhang: Optional[OVERHANG] = None) -> Iterator[Any]:
+                  overhang: Optional[OVERHANG] = None) -> Iterator[Tuple[T, ...]]:
     fixed_target = tuple(target)
 
     if overhang == "before" or overhang == "both":
@@ -32,10 +33,9 @@ def window_search(target: Iterable[Any],
 def factory(record: SeqRecord.SeqRecord,
             mapping: Dict[str, List[int]],
             weight: Optional[Dict[str, Union[int, float]]] = None) -> List[List[float]]:
-    seq = str(record.seq)
     allow_str = "".join(mapping.keys())
 
-    filterd_seq = re.sub(f"[^{allow_str}]", "", seq)
+    filterd_seq = re.sub(f"[^{allow_str}]", "", record.seq)
 
     dimension = 0    # default value, it will be rewrited
     for v in mapping.values():
@@ -46,9 +46,9 @@ def factory(record: SeqRecord.SeqRecord,
         weight = {}
 
     coordinates = [[0. for _ in range(dimension)]]
-    for triplet in window_search(filterd_seq, 3, overhang="both"):
-        triplet = "".join(triplet)
-        rate = weight.get(triplet, 1)
+    for t in window_search(filterd_seq, 3, overhang="both"):
+        triplet = "".join(t)
+        rate = weight.get(triplet, 1.0)
         vector = list(map(lambda x: x * rate, mapping[triplet[-1]]))
         coordinates.append([a + b for a, b in zip(coordinates[-1], vector)])
 
