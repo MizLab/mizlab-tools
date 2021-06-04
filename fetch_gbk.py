@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 from typing import Iterable, Iterator
 
 from Bio import Entrez, SeqIO, SeqRecord
@@ -35,8 +36,12 @@ if __name__ == "__main__":
     os.makedirs("fetched_data", exist_ok=True)
 
     if args.stdin:
-        n_records = int(input())
-        for fetched in fetch((input() for _ in range(n_records)), args.email):
+        if sys.stdin.isatty:
+            n_records = int(input())
+            accessions = [input() for _ in range(n_records)]
+        else:
+            accessions = [line for line in sys.stdin.readlines()]
+        for fetched in fetch(accessions, args.email):
             acc = fetched.name
             with open(f"fetched_data/{acc}.gbk", "w") as f:
                 SeqIO.write(fetched, f, "genbank")

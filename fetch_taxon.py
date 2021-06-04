@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import sys
 from typing import Dict, Iterator, List, Tuple, Union
 
 from Bio import Entrez
@@ -55,8 +56,11 @@ if __name__ == "__main__":
         os.makedirs(args.destination)
 
     if args.stdin:
-        n_inputs = int(input())
-        entries = [input() for _ in range(n_inputs)]
+        if sys.stdin.isatty():
+            n_inputs = int(input())
+            entries = [input() for _ in range(n_inputs)]
+        else:
+            entries = [line for line in sys.stdin.readlines()]
     else:
         entries = args.taxonomy_ids
 
