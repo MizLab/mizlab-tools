@@ -66,7 +66,9 @@ if __name__ == "__main__":
         description="Calculate dna data to coordinate. output stdout or file")
     parser.add_argument("gbkfiles", nargs="+", help="GBK format file path.")
     parser.add_argument("--weight", help="The json format weight file.")
-    parser.add_argument("--mapping", help="The json format vector mapping file.")
+    parser.add_argument("--mapping",
+                        help="The json format vector mapping file.",
+                        required=True)
     parser.add_argument(
         "-d",
         "--destination",
