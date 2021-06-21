@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 from typing import Iterable, Iterator
 
 from Bio import Entrez, SeqIO, SeqRecord
@@ -31,9 +32,22 @@ if __name__ == "__main__":
     parser.add_argument("--stdin",
                         action="store_true",
                         help="if you want to use stdin, use this flag.")
+    parser.add_argument(
+        "-d",
+        "--destination",
+        help=
+        "If set this property, information is stored into ./<-d>, else ./fetched_data/")
     args = parser.parse_args()
 
     os.makedirs("fetched_data", exist_ok=True)
+
+    if args.destination is None:
+        dst = Path("fetched_data")
+    else:
+        dst = Path(args.destination)
+
+    if not dst.exists():
+        dst.mkdir(parents=True, exist_ok=True)
 
     if args.stdin:
         if sys.stdin.isatty:
@@ -43,10 +57,10 @@ if __name__ == "__main__":
             accessions = [line for line in sys.stdin.readlines()]
         for fetched in fetch(accessions, args.email):
             acc = fetched.name
-            with open(f"fetched_data/{acc}.gbk", "w") as f:
+            with open(str(dst / f"{acc}.gbk"), "w") as f:
                 SeqIO.write(fetched, f, "genbank")
     else:
         for fetched in fetch(args.accessions, args.email):
             acc = fetched.name
-            with open(f"fetched_data/{acc}.gbk", "w") as f:
+            with open(str(dst / f"{acc}.gbk"), "w") as f:
                 SeqIO.write(fetched, f, "genbank")

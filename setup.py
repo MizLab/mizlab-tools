@@ -9,7 +9,7 @@ setup(
     author_email="h20ms419@hirosaki-u.ac.jp",
     url="",
     licence="LICENCE",
-    install_requires=["biopython"],
+    install_requires=["biopython", "pytest"],
     packages=find_packages(exclude=("tests", "docs")),
-    tests_require=["pytest"],
+    tests_require=["pytest", "pytest-runner"],
 )

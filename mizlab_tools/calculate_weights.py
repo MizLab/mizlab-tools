@@ -1,44 +1,77 @@
 #!/usr/bin/env python3
 
 import argparse
+import collections
 import json
 import os
 import re
-from collections import Counter
-from itertools import product
-from typing import Any, Dict, List, Union
+from typing import Counter, Dict, Iterable, Union
 
-from Bio import SeqIO
+import numpy as np
+from Bio import Seq, SeqIO
+from nptyping import Float64
 
-Openable = Union[str, bytes, int, "os.PathLike[Any]"]
+from . import gbk_utils
 
 
-def calculate_weights(paths: List[Openable], allow_chars: str) -> Dict[str, float]:
-    triplet_counter: Counter[str] = Counter()
-    for p in paths:
-        for record in SeqIO.parse(p, "genbank"):
-            seq = re.sub(f"[^{allow_chars}]", "", str(record.seq))
-            c = Counter([seq[i:i + 3] for i in range(len(seq) - 2)])
-            triplet_counter += c
+def calc_weights(sequences: Iterable[Union[str, Seq.Seq]],
+                 allowed: str) -> Dict[str, Float64]:
+    """calculate the weights .
 
-    weights = {}
-    for first, second in product(allow_chars, repeat=2):
-        twins = first + second
-        sum_of_start_with_twins = sum([triplet_counter[twins + t] for t in allow_chars])
-        for third in allow_chars:
-            codon = twins + third
-            weights[codon] = triplet_counter[codon] / sum_of_start_with_twins
+    Args:
+        sequences (Iterable[Union[str, Seq.Seq]]): Itatable object like sequence.
+        allowed (str): allowed string like "ATGC"
+
+    Returns:
+        Dict[str, Float64]:
+    """
+    counter: Counter[str] = collections.Counter()
+    for sequence in sequences:
+        counter += count_words(sequence, allowed, 3)
+
+    weights: Dict[str, float] = compute_self_entropy(counter, allowed)
     return weights
 
 
-if __name__ == "__main__":
+def count_words(string: Union[str, Seq.Seq], allowed: str, length: int) -> Counter[str]:
+    """count words split per {length}
+
+    Args:
+        string (Union[str, Seq.Seq]): string
+        allowed (str): allowed string like "ATGC"
+        length (int): separation length.
+
+    Returns:
+        Counter[str]:
+    """
+    pretty = re.sub(f"[^{allowed}]", "", str(string))
+    return Counter(
+        map(lambda x: "".join(x), gbk_utils.window_search(pretty, length, None)))
+
+
+def compute_self_entropy(counter: Counter[str], allowed: str) -> Dict[str, Float64]:
+    """compute_self_entropy.
+
+    Args:
+        counter (Counter[str]): counter of words.
+        allowed (str): allowed string like "ATGC"
+
+    Returns:
+        Dict[str, Float64]:
+    """
+    bases = set(allowed)
+    entropies: Dict[str, float] = {}
+    for body, content in counter.items():
+        head = body[:-1]
+        denominator = sum([counter.get(head + base, 0) for base in bases])
+        entropies[body] = -1 * np.log2(content / denominator)
+    return entropies
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Calculate 3 words weight, based on frequency of appearance.")
     parser.add_argument("gbkfiles", nargs="+", help="Genbank format file paths.")
-    parser.add_argument(
-        "--stdout",
-        action="store_true",
-        help="if set this flag, show weight into stdout as json-format.")
     parser.add_argument(
         "-d",
         "--destination",
@@ -49,10 +82,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    weights = calculate_weights(args.gbkfiles, allow_chars=args.allow_chars)
+    sequences = []
+    for p in args.gbkfiles:
+        for record in SeqIO.parse(p, "genbank"):
+            sequences.append(record.seq)
+
+    weights = calc_weights(sequences, args.allow_chars)
+    weight_for_output: Dict[str, float] = {k: float(v) for k, v in weights.items()}
+
     if args.destination is not None:
         os.makedirs(args.destination, exist_ok=True)
         with open(os.path.join(args.destination, "weights.json"), "w") as f:
-            json.dump(weights, f)
+            json.dump(weight_for_output, f)
     else:
-        print(json.dumps(weights))
+        print(json.dumps(weight_for_output))
+
+
+if __name__ == "__main__":
+    main()

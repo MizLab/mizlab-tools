@@ -58,14 +58,14 @@ def test_is_mongrel(name, expected):
     assert gbk_utils.is_mongrel(name) == expected
 
 
-@pytest.mark.parametrize(("gbk", "expected"), [
-    ("NC_039811.gbk", False),
-    ("NC_050359.gbk", False),
-    ("LT671463.gbk", False),
-    ("NC_012920.gbk", True),
+@pytest.mark.parametrize(("definition", "expected"), [
+    ("Homo sapiens mitochondrion, complete genome.", True),
+    ("Homo sapiens isolate CHM1 mitochondrion, complete sequence, whole genome shotgun sequence.",
+     False),
+    ("Kudoa iwatai mitochondrion, chromosome 2, complete sequence.", False),
 ])
-def test_is_complete_genome(gbk, expected):
-    assert gbk_utils.is_complete_genome(gbk_utils.get_definition(load(gbk))) == expected
+def test_is_complete_genome(definition, expected):
+    assert gbk_utils.is_complete_genome(definition) == expected
 
 
 @pytest.mark.parametrize(("source", "expected"),
@@ -75,10 +75,6 @@ def test_to_only_atgc(source, expected):
     assert gbk_utils.to_only_actg(source) == Seq(expected)
 
 
-def to_contigdict(item):
-    return {k: v for k, v in zip(("accession", "start", "end", "is_complement"), item)}
-
-
 @pytest.mark.parametrize(
     ("source", "expected"),
     [("join(LVXP01042324.1:1..16300)", ("LVXP01042324", 0, 16300, False)),
@@ -86,7 +82,10 @@ def to_contigdict(item):
      ("join(complement(JAACYO010019948.1:1..16778))",
       ("JAACYO010019948", 0, 16778, True))])
 def test_parse_contig(source, expected):
-    assert gbk_utils.parse_contig(source) == to_contigdict(expected)
+    assert gbk_utils.parse_contig(source) == {
+        k: v
+        for k, v in zip(("accession", "start", "end", "is_complement"), expected)
+    }
 
 
 @pytest.mark.parametrize(("source", "expecteds"), [("NC_046603.gbk", (True, )),
