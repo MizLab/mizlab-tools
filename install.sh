@@ -3,9 +3,10 @@
 function link_to {
     local dst=$1
     local pwd=$(readlink -f $PWD)
-    for f in $(ls *.py); do
-        command chmod +x $pwd/$f
-        command ln -snf $pwd/$f $local_bin/$(echo $f | sed -e "s@\.py@@")
+    local scripts=(calculate_weights.py calculate_coordinates.py fetch_gnr.py fetch_gbk.py fetch_taxon.py)
+    for f in ${scripts[@]}; do
+        command chmod +x $pwd/mizlab_tools/$f
+        command ln -snf $pwd/mizlab_tools/$f $local_bin/$(echo $f | sed -e "s@\.py@@")
     done
 }
 
