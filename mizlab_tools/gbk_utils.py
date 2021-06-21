@@ -2,8 +2,8 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence,
-                    Tuple, TypeVar, Union)
+from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence, Tuple,
+                    TypeVar, Union)
 
 from Bio import Seq, SeqIO, SeqRecord
 
@@ -16,55 +16,48 @@ T = TypeVar("T")
 Openable = Union[str, bytes, int, "os.PathLike[Any]"]
 
 
-def get_taxonID(path: Openable) -> str:
-    """対象のgbkファイルのrecordからtaxonIDを抽出する
+def get_taxonID(record: SeqRecord.SeqRecord) -> Optional[str]:
+    """get taxonID.
 
     Args:
-        record (Openable): 対象のファイルのpath
+        record (SeqRecord.SeqRecord): seq record.
 
     Returns:
-        str: db_xrefに記載されたTaxonID
+        Optional[str]: if exists taxon id. else None.
     """
-    for record in SeqIO.parse(path, "genbank"):
-        for feature in record.features:
-            if feature.type == "source":
-                db_xref: str = feature.qualifiers["db_xref"][0]
-                taxonID: str = db_xref.split(":")[1]
-                return taxonID
-        raise NotFoundTaxonIDError(f"Can not Found taxonID in {record.name}")
-    return ""
+    for feature in record.features:
+        if feature.type == "source":
+            if feature.qualifiers.get("db_xref", None) is not None:
+                for db_xref in feature.qualifiers["db_xref"]:
+                    name, identifier, *_ = db_xref.split(":")
+                    if name.lower() == "taxon":
+                        return identifier
+    return None
 
 
-class NotFoundTaxonIDError(Exception):
-    pass
-
-
-def get_definition(path: Openable) -> str:
+def get_definition(record: SeqRecord.SeqRecord) -> str:
     """get definition.
 
     Args:
-        path (Path): 対象のファイルのpath
+        record (SeqRecord.SeqRecord): record
 
     Returns:
-        str: 生物の学名
+        str: definition string.
     """
-    for record in SeqIO.parse(path, "genbank"):
-        return record.description
-    return ""
+    return record.description
 
 
-def get_creature_name(path: Openable) -> str:
+# def get_creature_name(path: Openable) -> str:
+def get_creature_name(record: SeqRecord.SeqRecord) -> Optional[str]:
     """get creature name.
 
     Args:
-        path (Openable): 対象のファイルのpath
+        record (SeqRecord.SeqRecord): record
 
     Returns:
-        str:
+        Optional[str]:
     """
-    for record in SeqIO.parse(path, "genbank"):
-        return record.annotations["organism"]
-    return ""
+    return record.annotations.get("organism", None)
 
 
 OVERHANG = Literal["before", "after", "both"]
@@ -76,7 +69,7 @@ def window_search(target: Union[str, Seq.Seq],
     """window_search.
 
     Args:
-        target (Iterable): list like object.
+        target (Iterable): like sequence.
         window_size (int): window_size
         overhang (Optional[OVERHANG]): overhang
 
@@ -102,31 +95,32 @@ def window_search(target: Union[str, Seq.Seq],
 #     return rate
 
 
-def has_seq(gbk: Openable) -> bool:
-    """与えられたgbkファイルが有効な配列長を持つかどうかを返す.
+def has_seq(record: SeqRecord.SeqRecord) -> bool:
+    """if record has only "N" in seq, return False.
 
     Args:
-        gbk (Openable): gbkファイルへのpath
+        record (SeqRecord.SeqRecord): record
 
     Returns:
         bool:
     """
-    return any([
-        len((re.sub("[^ATGC]", "",
-                    str(rec.seq).upper()))) for rec in SeqIO.parse(gbk, "genbank")
-    ])
+    return bool(len(re.sub("[^ATGC]", "", str(record.seq).upper())))
 
 
-def is_mongrel(name: str) -> bool:
-    """'~ x ~'で書かれる雑種かどうかを返す.
+def is_mongrel(record: SeqRecord.SeqRecord) -> bool:
+    """Is the creature written in record mongrel ? 
 
     Args:
-        name (str): 生物種
+        record (SeqRecord.SeqRecord): record
 
     Returns:
         bool:
     """
-    return " x " in name
+    name = get_creature_name(record)
+    if name is None:
+        return False
+    else:
+        return " x " in name
 
 
 def is_complete_genome(definition: str) -> bool:
@@ -138,7 +132,8 @@ def is_complete_genome(definition: str) -> bool:
     Returns:
         bool:
     """
-    return "complete" in definition and "shotgun" not in definition and "chromosome" not in definition
+    return ("complete" in definition and "shotgun" not in definition
+            and "chromosome" not in definition)
 
 
 def parse_contig(contig: str) -> Optional[Dict[str, Union[str, int]]]:
@@ -178,7 +173,11 @@ def has_contig(record: SeqRecord) -> bool:
     Returns:
         bool: have contig or not have.
     """
-    return "contig" in record.annotations
+
+    if hasattr(record, "annotations"):
+        return "contig" in record.annotations.keys()
+    else:
+        return False
 
 
 def get_seq(record: SeqRecord,
@@ -222,4 +221,7 @@ def get_seq(record: SeqRecord,
 
 
 class FileNotFoundError(Exception):
+    """FileNotFoundError.
+    """
+
     pass
