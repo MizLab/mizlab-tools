@@ -28,6 +28,5 @@ setup(
             "fetch_taxon = mizlab_tools.fetch_taxon:main"
         ]
     },
-    download_url='https://github.com/MizLab/mizlab-tools/dist/v0.3.7.tar.gz',
     python_requires=">=3.6.1",
 )
