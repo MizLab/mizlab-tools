@@ -23,7 +23,7 @@ def fetch(accession_numbers: Iterable[str],
                 yield r
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch some gbk files.")
     parser.add_argument("--email",
                         required=True,
@@ -64,3 +64,7 @@ if __name__ == "__main__":
             acc = fetched.name
             with open(str(dst / f"{acc}.gbk"), "w") as f:
                 SeqIO.write(fetched, f, "genbank")
+
+
+if __name__ == "__main__":
+    main()
