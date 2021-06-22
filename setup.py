@@ -14,9 +14,10 @@ setup(
     version="0.0.1",
     description="Some codes used in research.",
     long_description=load_readme(),
+    long_description_content_type="text/markdown",
     author="Omochice",
     author_email="h20ms419@hirosaki-u.ac.jp",
-    url="",
+    url="https://github.com/MizLab/mizlab-tools",
     license="MIT",
     install_requires=["biopython", "requests"],
     packages=find_packages(exclude=("tests", "docs")),
@@ -27,4 +28,6 @@ setup(
             "fetch_taxon = mizlab_tools.fetch_taxon:main"
         ]
     },
+    download_url='https://github.com/MizLab/mizlab-tools/dist/v0.3.7.tar.gz',
+    python_requires=">=3.6.1",
 )
