@@ -10,16 +10,6 @@ from Bio.SeqRecord import SeqRecord
 from mizlab_tools import gbk_utils
 
 
-def load(gbkname) -> Path:
-    """test_get_creature_name.
-
-    Args:
-        gbk:
-        expected:
-    """
-    return Path(Path(__file__).resolve().parent / "in" / gbkname)
-
-
 def make_mock_record(seq: Seq = Seq("ATGC"),
                      id: str = "mock_id",
                      name: Optional[str] = "mock_name",
@@ -182,10 +172,6 @@ def test_parse_contig(source: str, expected: Optional[Union[Tuple[str, int, int,
 #
 # @pytest.mark.parametrize(
 #     ("source", "expected"),
-#     [("join(LVXP01042324.1:1..16300)", ("LVXP01042324", 0, 16300, False)),
-#      ("join(JABSTT010003572.1:1..14723)", ("JABSTT010003572", 0, 14723, False)),
-#      ("join(complement(JAACYO010019948.1:1..16778))",
-#       ("JAACYO010019948", 0, 16778, True))])
 # def test_parse_contig(source, expected):
 #     assert gbk_utils.parse_contig(source) == {
 #         k: v
