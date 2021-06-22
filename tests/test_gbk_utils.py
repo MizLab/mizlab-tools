@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pytest
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation
 
 from mizlab_tools import gbk_utils
 
@@ -129,6 +129,23 @@ def test_is_mongrel(name: Optional[str], expected: bool):
     else:
         mock = make_mock_record(annotations={"organism": name})
     assert gbk_utils.is_mongrel(mock) == expected
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [("join(LVXP01042324.1:1..16300)", ("LVXP01042324", 0, 16300, False)),
+     ("join(JABSTT010003572.1:1..14723)", ("JABSTT010003572", 0, 14723, False)),
+     ("join(complement(JAACYO010019948.1:1..16778))",
+      ("JAACYO010019948", 0, 16778, True)), ("this is not contig", None)],
+)
+def test_parse_contig(source: str, expected: Optional[Union[Tuple[str, int, int,
+                                                                  bool]]]):
+    if expected is None:
+        assert gbk_utils.parse_contig(source) is None
+    else:
+        key = ("accession", "start", "end", "is_complement")
+        expected_dict = {k: v for k, v in zip(key, expected)}
+        assert gbk_utils.parse_contig(source) == expected_dict
 
 
 #
