@@ -1,16 +1,29 @@
 # mizlab tools
 
-研究で使われているツール群
+[![setup.py test](https://github.com/MizLab/mizlab-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/MizLab/mizlab-tools/actions/workflows/ci.yml)
 
-## Includes
 
-### python(要biopython)
+## Installation
 
-- [fetch_gbk.py](docs/fetch_gbk.md)
-    アクセッション番号を元にgbkファイルを取得するプログラム
-- [fetch_taxon.py](docs/fetch_taxon.md)
-    taxonomy IDを元に分類情報を取得するプログラム
-- [calculate_weights.py](docs/calculate_weights.md)
-    複数のgbkファイルを読み込み、3塩基ごとの重みを算出するプログラム    
-- [calculate_coordinates.py](docs/calculate_coordinates.md)
-    複数のgbkファイルを読み込み、指定されたベクトルの割り振りを塩基に対して行い、座標を出力するプログラム。
+```sh
+pip install git+https://github.com/MizLab/mizlab-tools.git
+```
+
+### Uninstall
+
+```sh
+pip uninstall mizlab-tools
+```
+
+### Usage
+
+#### In `Python` script
+
+```python
+import mizlab_tools
+```
+
+
+#### CLI commands
+
+This library provide some CLI commands. See in [This]()
