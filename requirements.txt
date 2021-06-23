@@ -6,6 +6,7 @@ idna==2.10
 iniconfig==1.1.1
 mypy==0.910
 mypy-extensions==0.4.3
+nptyping==1.4.2
 numpy==1.21.0
 packaging==20.9
 pluggy==0.13.1
@@ -16,4 +17,5 @@ pytest-runner==5.3.1
 requests==2.25.1
 toml==0.10.2
 typing-extensions==3.10.0.0
+typish==1.9.2
 urllib3==1.26.5
