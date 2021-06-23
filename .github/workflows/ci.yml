@@ -1,3 +1,8 @@
+name: setup.py test
+
+on: 
+  push: 
+
 jobs:
   build: 
     runs-on: ${{ matrix.os }}
