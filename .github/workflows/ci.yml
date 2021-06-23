@@ -4,6 +4,7 @@ on:
   push: 
     paths: 
       - "mizlab_tools/**"
+      - "tests"
 
 jobs:
   build: 
