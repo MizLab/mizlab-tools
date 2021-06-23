@@ -11,6 +11,15 @@ from Bio import Entrez, SeqIO, SeqRecord
 
 def fetch(accession_numbers: Iterable[str],
           email: str) -> Iterator[SeqRecord.SeqRecord]:
+    """Fetch gbk files.
+
+    Args:
+        accession_numbers (Iterable[str]): acsession numbers.
+        email (str): email used in fetch NCBI(Entrez).
+
+    Returns:
+        Iterator[SeqRecord.SeqRecord]:
+    """
     Entrez.email = email
     n_once = 1000
     records = tuple(accession_numbers)
