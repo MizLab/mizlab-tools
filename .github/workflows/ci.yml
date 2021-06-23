@@ -1,6 +1,6 @@
 jobs:
   build: 
-  runs-ok: ${{ matrix.os }}
+  runs-on: ${{ matrix.os }}
   strategy: 
   matrix: 
     os: [ubuntu-latest]
