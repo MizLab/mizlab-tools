@@ -6,8 +6,8 @@ import os
 import sys
 from collections import deque
 from pathlib import Path
-from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional,
-                    Sequence, Tuple, Union)
+from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional, Sequence,
+                    Tuple, Union)
 from urllib.parse import ParseResult
 
 import requests
@@ -19,7 +19,16 @@ from . import gbk_utils, utils
 def fetch_taxon(records: Iterable[SeqRecord.SeqRecord],
                 email: str,
                 n_once: int = 100) -> Dict[str, Union[str, Dict[str, Dict[str, str]]]]:
+    """Fetch taxonomy information from NCBI and some DB via Global Names Resolver.
 
+    Args:
+        records (Iterable[SeqRecord.SeqRecord]): records
+        email (str): email address used in fetching Entrez.
+        n_once (int): number of taxonomy informations at once fetching.
+
+    Returns:
+        Dict[str, Union[str, Dict[str, Dict[str, str]]]]:
+    """
     taxon_info = {}
     for s in utils.split_per_n(records, n=n_once):
         subrecords = tuple(records)
@@ -31,7 +40,7 @@ def fetch_taxon(records: Iterable[SeqRecord.SeqRecord],
         sub_results = {}
         for accession, binomial_name, res_ncbi, res_gnr in zip(
                 map(lambda x: x.name, subrecords), binomial_names,
-                fetch_taxon_from_NCBI(taxon_ids, email=email),
+                fetch_taxon_from_NCBI(taxon_ids, email=email, n_once=n_once),
                 fetch_taxon_from_GNR(binomial_names)):
             sub_results[accession] = {
                 "binomial_name": binomial_name,
@@ -49,7 +58,19 @@ def fetch_taxon(records: Iterable[SeqRecord.SeqRecord],
 def fetch_taxon_from_NCBI(
         taxonomy_ids: Iterable[str],
         email: str,
+        n_once: int = 100,
         verbose: bool = False) -> Iterator[Union[List[Dict[str, str]], Dict[str, str]]]:
+    """Fetch taxonomy informations from NCBI(Entrez).
+
+    Args:
+        taxonomy_ids (Iterable[str]): taxonomy_ids
+        email (str): email address used in fetching Entrez.
+        n_once (int): number of taxonomy informations at once fetching.
+        verbose (bool): whether include ambigous taxonomy informations.
+
+    Returns:
+        Iterator[Union[List[Dict[str, str]], Dict[str, str]]]:
+    """
     Entrez.email = email
     n_once = 100
 
@@ -70,38 +91,56 @@ def fetch_taxon_from_NCBI(
                     }
 
 
-def fetch_taxon_from_GNR(
-        names: Iterable[str],
-        priority: Optional[Sequence[int]] = None
-) -> Iterator[Dict[str, Dict[str, str]]]:
+def fetch_taxon_from_GNR(names: Iterable[str],
+                         priority: Optional[Sequence[int]] = None,
+                         n_once: int = 100) -> Iterator[Dict[str, Dict[str, str]]]:
+    """fetch_taxon_from_GNR.
+
+    Args:
+        names (Iterable[str]): names in biology.
+        priority (Optional[Sequence[int]]): priority. see in https://resolver.globalnames.org
+        n_once (int): number of taxonomy informations at once fetching.
+
+    Returns:
+        Iterator[Dict[str, Dict[str, str]]]:
+    """
     url = "http://resolver.globalnames.org/name_resolvers.json"
     if priority is None:
         priority = [4, 3, 179, 11, 1, 8]
-    queue: Deque = deque()
-    queue.append(tuple(names))
-    while (queue):
-        sub_names = queue.popleft()
-        params = {
-            "names": "|".join(sub_names),
-            "best_match_only": True,
-            "preferred_data_sources": "|".join(map(str, priority))
-        }
-        r = requests.get(url, params=params)
-        try:
-            data = r.json()
-        except Exception:
-            if len(sub_names) == 1:
-                yield {}
-            else:
-                mid = len(sub_names) // 2
-                queue.append(sub_names[:mid])
-                queue.append(sub_names[mid:])
-        else:
-            for entry in data["data"]:
-                yield _parse_gnr_response(entry)
+    for s in utils.split_per_n(names, n_once):
+        queue: Deque = deque()
+        queue.append(tuple(s))
+        while (queue):
+            sub_names = queue.popleft()
+            params = {
+                "names": "|".join(sub_names),
+                "best_match_only": True,
+                "preferred_data_sources": "|".join(map(str, priority))
+            }
+            r = requests.get(url, params=params)
+            try:
+                data = r.json()
+            except Exception:
+                if len(sub_names) == 1:
+                    yield {}
+                else:
+                    mid = len(sub_names) // 2
+                    queue.append(sub_names[:mid])
+                    queue.append(sub_names[mid:])
+            else:    # when not Exception
+                for entry in data["data"]:
+                    yield _parse_gnr_response(entry)
 
 
 def _parse_gnr_response(entry: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    """Parse responce from Grobal Names Resolver.
+
+    Args:
+        entry (Dict[str, Any]): The responce of a query from global names resolver.
+
+    Returns:
+        Dict[str, Dict[str, str]]:
+    """
     invalid_ranks_and_names = {"", "no rank", "no rank - terminal", "Not assingned"}
     results = {}
     for record in entry.get("preferred_results", []):
@@ -117,6 +156,14 @@ def _parse_gnr_response(entry: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
 
 
 def _fetch_ncbi(args: argparse.Namespace) -> None:
+    """Wrapper of fetch_taxon_from_NCBI.
+
+    Args:
+        args (argparse.Namespace): arguments from commandline.
+
+    Returns:
+        None:
+    """
     dst = Path()
     if args.destination is not None:
         dst = Path(args.description)
@@ -132,6 +179,14 @@ def _fetch_ncbi(args: argparse.Namespace) -> None:
 
 
 def _fetch_gnr(args: argparse.Namespace) -> None:
+    """Wrapper of fetch_taxon_from_GNR
+
+    Args:
+        args (argparse.Namespace): arguments from commandline.
+
+    Returns:
+        None:
+    """
     dst = Path()
     if args.destination is not None:
         dst = Path(args.destination)
@@ -182,41 +237,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    # parser = argparse.ArgumentParser(
-    #     description="Fetch taxonomy information from Entrez.")
-    # parser.add_argument("--email",
-    #                     required=True,
-    #                     help="your e-mail address to fetch data. (required)")
-    # parser.add_argument("--stdin",
-    #                     action="store_true",
-    #                     help="if you want to use stdin, use this flag.")
-    # parser.add_argument(
-    #     "-d",
-    #     "--destination",
-    #     help="If set this property, information is stored into ./<-d>, else stdout.")
-    # parser.add_argument("--verbose",
-    #                     action="store_true",
-    #                     help="Show ambiguous taxon info.")
-    # parser.add_argument("taxonomy_ids", nargs="*", help="taxonomy ids")
-    # args = parser.parse_args()
-    #
-    # if args.destination:
-    #     os.makedirs(args.destination)
-    #
-    # if args.stdin:
-    #     if sys.stdin.isatty():
-    #         n_inputs = int(input())
-    #         entries = [input() for _ in range(n_inputs)]
-    #     else:
-    #         entries = [line for line in sys.stdin.readlines()]
-    # else:
-    #     entries = args.taxonomy_ids
-    #
-    # for taxon_id, result in zip(entries, fetch_taxon(entries, args.email,
-    #                                                  args.verbose)):
-    #     if not args.destination:
-    #         print(f"---{taxon_id}---")
-    #         print(result)
-    #     else:
-    #         with open(f"{args.destination}/{taxon_id}.json", "w") as f:
-    #             json.dump(result, f, indent=2)
