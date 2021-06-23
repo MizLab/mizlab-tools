@@ -2,6 +2,8 @@ name: setup.py test
 
 on: 
   push: 
+    paths: 
+      - "mizlab_tools/**"
 
 jobs:
   build: 
