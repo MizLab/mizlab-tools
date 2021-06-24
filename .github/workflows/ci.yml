@@ -20,9 +20,12 @@ jobs:
         with: 
           python-version: ${{ matrix.python-version }}
       - name: Install Depends
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv install --dev
       - name: Tests
-        run: python setup.py test
+        run: pipenv run python setup.py test
 
   deploy:
     needs: build 
@@ -44,9 +47,10 @@ jobs:
       - name: Install sphinx and depends
         run: | 
           python -m pip install --upgrade pip
-          pip install sphinx commonmark recommonmark sphinx_rtd_theme
-          sphinx-apidoc -f -o source/mizlab_tools ./mizlab_tools
-          sphinx-build -b html ./source ./docs
+          pip install pipenv
+          pipenv install --dev
+          pipenv run sphinx-apidoc -f -o source/mizlab_tools ./mizlab_tools
+          pipenv run sphinx-build -b html ./source ./docs
       - name: deploy
         run: |
           git config user.name = "github-actions"
