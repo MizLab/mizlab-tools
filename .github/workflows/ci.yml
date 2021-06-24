@@ -23,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
-          pipenv install --dev
+          pipenv install --dev --skip-lock
       - name: Tests
         run: pipenv run python setup.py test
 
@@ -48,7 +48,7 @@ jobs:
         run: | 
           python -m pip install --upgrade pip
           pip install pipenv
-          pipenv install --dev
+          pipenv install --dev --skip-lock
           pipenv run sphinx-apidoc -f -o source/mizlab_tools ./mizlab_tools
           pipenv run sphinx-build -b html ./source ./docs
       - name: deploy
