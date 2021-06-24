@@ -15,5 +15,7 @@ commonmark = "*"
 recommonmark = "*"
 sphinx-rtd-theme = "*"
 pytest = "*"
+pytest-cov = "*"
+pytest-runner = "*"
 
 [requires]
