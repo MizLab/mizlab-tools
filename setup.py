@@ -19,7 +19,12 @@ setup(
     author_email="h20ms419@hirosaki-u.ac.jp",
     url="https://github.com/MizLab/mizlab-tools",
     license="MIT",
-    install_requires=["biopython", "requests"],
+    install_requires=[
+        "biopython",
+        "requests",
+        "nptyping",
+        "numpy",
+    ],
     packages=find_packages(exclude=("tests", "docs")),
     tests_require=["pytest", "pytest-runner"],
     entry_points={
