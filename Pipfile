@@ -18,4 +18,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-runner = "*"
 
+[scripts]
+test = "pytest --cov=mizlab_tools"
+
 [requires]
