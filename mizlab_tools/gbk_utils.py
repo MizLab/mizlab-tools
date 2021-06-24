@@ -2,8 +2,8 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence, Tuple,
-                    TypeVar, Union)
+from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence,
+                    Tuple, TypeVar, Union)
 
 from Bio import Seq, SeqIO, SeqRecord
 
@@ -47,7 +47,6 @@ def get_definition(record: SeqRecord.SeqRecord) -> str:
     return record.description
 
 
-# def get_creature_name(path: Openable) -> str:
 def get_creature_name(record: SeqRecord.SeqRecord) -> Optional[str]:
     """get creature name.
 
@@ -87,14 +86,6 @@ def window_search(target: Union[str, Seq.Seq],
             yield target[i:]
 
 
-# def get_rate(string: AnyStr, allowed: AnyStr) -> Dict[str, float]:
-#     pretty = re.sub(f"[^{allowed}]", "", string.upper())
-#     length = len(pretty)
-#     counter = Counter(pretty)
-#     rate = {k: v / lengtg for k, v in counter.items()}
-#     return rate
-
-
 def has_seq(record: SeqRecord.SeqRecord) -> bool:
     """if record has only "N" in seq, return False.
 
@@ -108,7 +99,7 @@ def has_seq(record: SeqRecord.SeqRecord) -> bool:
 
 
 def is_mongrel(record: SeqRecord.SeqRecord) -> bool:
-    """Is the creature written in record mongrel ? 
+    """Is the creature written in record mongrel ?
 
     Args:
         record (SeqRecord.SeqRecord): record
@@ -168,7 +159,7 @@ def has_contig(record: SeqRecord) -> bool:
     """Does the record has contig?
 
     Args:
-        record (SeqRecord): record 
+        record (SeqRecord): record
 
     Returns:
         bool: have contig or not have.
