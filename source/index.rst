@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to mizlab-tools's documentation!
+MizLab Tools documentation
 ========================================
 
 .. toctree::
@@ -11,7 +11,6 @@ Welcome to mizlab-tools's documentation!
    :caption: Contents:
 
    ./mizlab_tools/modules
-   ./coverage/index
 
 
 
@@ -20,12 +19,8 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
-* :ref:`coverage/index`
-* `coverage <../coverage/index.html>`
-* <a href="coverage/index.html"></a>
+* .. raw:: html
 
-.. raw:: html
-
-   <a href="coverage/index.html">coverage</a>
+   <a href="coverage/index.html">Coverage Report</a>
+.. * :ref:`search`
 
