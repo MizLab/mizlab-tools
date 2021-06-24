@@ -10,7 +10,7 @@ from Bio.SeqRecord import SeqRecord
 from mizlab_tools import gbk_utils
 
 
-def make_mock_record(seq: Seq = Seq("ATGC"),
+def make_mock_record(seq: Union[str, Seq] = Seq("ATGC"),
                      id: str = "mock_id",
                      name: Optional[str] = "mock_name",
                      description: Optional[str] = "mock_description",
@@ -31,6 +31,8 @@ def make_mock_record(seq: Seq = Seq("ATGC"),
     Returns:
         SeqRecord:
     """
+    if type(seq) == str:
+        seq = Seq(seq)
     return SeqRecord(seq=seq,
                      id=id,
                      name=name,
@@ -103,6 +105,16 @@ def test_window_search(source: Union[str, Seq], window_size: int,
                 assert len(windows[-i]) == i
 
 
+@pytest.mark.parametrize(("seq", "allowed", "expected"), [
+    ("ATGCATGC", "ATGC", True),
+    ("NNNNNN", "ATGC", False),
+    ("NNNNNN", "ATGCN", True),
+])
+def test_has_seq(seq: str, allowed: str, expected: bool):
+    mock = make_mock_record(seq=seq)
+    assert gbk_utils.has_seq(mock, allowed) == expected
+
+
 @pytest.mark.parametrize(("name", "expected"), [
     (None, False),
     ("", False),
@@ -119,6 +131,16 @@ def test_is_mongrel(name: Optional[str], expected: bool):
     else:
         mock = make_mock_record(annotations={"organism": name})
     assert gbk_utils.is_mongrel(mock) == expected
+
+
+@pytest.mark.parametrize(("source", "expected"), [
+    ("Homo sapiens mitochondrion, complete genome.", True),
+    ("Gecarcoidea natalis isolate GN2 mitochondrion, partial genome.", False),
+    ("Kudoa iwatai mitochondrion, chromosome 2, complete sequence.", False),
+    ("mitochondrion_genome, whole genome shotgun sequence.", False),
+])
+def test_is_complete_genome(source: str, expected: bool):
+    assert gbk_utils.is_complete_genome(source) == expected
 
 
 @pytest.mark.parametrize(

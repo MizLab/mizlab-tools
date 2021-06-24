@@ -86,16 +86,18 @@ def window_search(target: Union[str, Seq.Seq],
             yield target[i:]
 
 
-def has_seq(record: SeqRecord.SeqRecord) -> bool:
-    """if record has only "N" in seq, return False.
+def has_seq(record: SeqRecord.SeqRecord, allowed: str) -> bool:
+    """has valid sequence?
 
     Args:
-        record (SeqRecord.SeqRecord): record
+        record (SeqRecord.SeqRecord): Record.
+        allowed (str): Allowed characters. (will upper)
 
     Returns:
         bool:
     """
-    return bool(len(re.sub("[^ATGC]", "", str(record.seq).upper())))
+    allowed = re.sub(r"\s", "", allowed.upper())
+    return bool(len(re.sub(f"[^{allowed}]", "", str(record.seq).upper())))
 
 
 def is_mongrel(record: SeqRecord.SeqRecord) -> bool:
