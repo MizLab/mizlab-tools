@@ -10,7 +10,8 @@ Welcome to mizlab-tools's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-    ./mizlab_tools/modules
+   ./mizlab_tools/modules
+   ./coverage/index
 
 
 
@@ -20,3 +21,11 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+* :ref:`coverage/index`
+* `coverage <../coverage/index.html>`
+* <a href="coverage/index.html"></a>
+
+.. raw:: html
+
+   <a href="coverage/index.html">coverage</a>
+

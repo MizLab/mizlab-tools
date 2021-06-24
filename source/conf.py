@@ -60,6 +60,7 @@ html_static_path = ['_static']
 from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 
+source_suffix = [".rst", ".md", ".html"]
 source_parsers = {
     ".md": CommonMarkParser,
 }
