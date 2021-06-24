@@ -2,8 +2,8 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence,
-                    Tuple, TypeVar, Union)
+from typing import (Any, AnyStr, Dict, Iterable, Iterator, Optional, Sequence, Tuple,
+                    TypeVar, Union)
 
 from Bio import Seq, SeqIO, SeqRecord
 
@@ -155,7 +155,7 @@ def parse_contig(contig: str) -> Optional[Dict[str, Union[str, int]]]:
         }
 
 
-def has_contig(record: SeqRecord) -> bool:
+def has_contig(record: SeqRecord.SeqRecord) -> bool:
     """Does the record has contig?
 
     Args:
@@ -169,50 +169,3 @@ def has_contig(record: SeqRecord) -> bool:
         return "contig" in record.annotations.keys()
     else:
         return False
-
-
-def get_seq(record: SeqRecord,
-            recursive: bool = False,
-            search_gbk_root: Optional[Openable] = None,
-            is_complement: bool = False) -> Seq.Seq:
-    """gbkから配列を取得する
-    recursiveがTrueの時、contigに書かれたものを取得する
-
-    Args:
-        record (SeqRecord): 取得対象のレコード
-        recursive (bool, optional): contigがあったときに再帰的に取得するか. Defaults to False.
-        search_gbk_root (Optional[Openable], optional): recursiveがTrueの時、どこにあるgbkを探す対象にするか. Defaults to None.
-        is_complement (bool): 再帰的に見る時
-
-    Raises:
-        FileNotFoundError: recursiveがtrueで探したが、contigのgbkが見つからなかったときに送出される。
-
-    Returns:
-        Seq.Seq: record's sequence.
-    """
-    if recursive and has_contig(record):
-        contig_info = parse_contig(record.annotations["contig"])
-        contig_gbk = Path(search_gbk_root) / f"{contig_info['accession']}.gbk"
-        if not contig_gbk.exists():
-            raise FileNotFoundError
-        else:
-            for r in SeqIO.parse(contig_gbk, "genbank"):    # 複数レコードは考慮しない(面倒なので)
-                return get_seq(r,
-                               recursive=True,
-                               search_gbk_root=search_gbk_root,
-                               is_complement=(is_complement
-                                              ^ contig_info["is_complement"]))
-                # よって複数レコードだと最初のものが対象になるが多分大丈夫
-    else:
-        seq = record.seq
-        if is_complement:
-            return seq.complement()
-        else:
-            return seq
-
-
-class FileNotFoundError(Exception):
-    """FileNotFoundError.
-    """
-
-    pass

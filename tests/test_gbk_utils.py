@@ -136,3 +136,19 @@ def test_parse_contig(source: str, expected: Optional[Union[Tuple[str, int, int,
         key = ("accession", "start", "end", "is_complement")
         expected_dict = {k: v for k, v in zip(key, expected)}
         assert gbk_utils.parse_contig(source) == expected_dict
+
+
+@pytest.mark.parametrize(("contig", "expected"), [
+    (["a", "b", "c"], False),
+    (["contig"], True),
+    (None, False),
+])
+def test_has_contig(contig: Optional[List[str]], expected: bool):
+    if contig is not None:
+        annotations = {k: "" for k in contig}
+    else:
+        annotations = {}
+    mock = make_mock_record(annotations=annotations)
+    if contig is None:
+        delattr(mock, "annotations")
+    assert gbk_utils.has_contig(mock) == expected
