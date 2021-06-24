@@ -22,6 +22,16 @@ T = TypeVar("T")
 def window_search(target: Iterable[T],
                   size: int,
                   overhang: Optional[OVERHANG] = None) -> Iterator[Tuple[T, ...]]:
+    """Iteration with window.
+
+    Args:
+        target (Iterable[T]): Target Iterable object.
+        size (int): Size of window.
+        overhang (Optional[OVERHANG]): overhang. must in {"before", "after", "both"}
+
+    Returns:
+        Iterator[Tuple[T, ...]]: Window.
+    """
     fixed_target = tuple(target)
 
     if overhang == "before" or overhang == "both":
@@ -39,6 +49,16 @@ def window_search(target: Iterable[T],
 def factory(record: SeqRecord.SeqRecord,
             mapping: Dict[str, List[int]],
             weight: Optional[Dict[str, Union[int, float]]] = None) -> List[List[float]]:
+    """Calculate with mapping and weight.
+
+    Args:
+        record (SeqRecord.SeqRecord): SeqRecord.
+        mapping (Dict[str, List[int]]): Mapping of vector to base.
+        weight (Optional[Dict[str, Union[int, float]]]): weights.
+
+    Returns:
+        List[List[float]]:
+    """
     allow_str = "".join(mapping.keys())
 
     filterd_seq = re.sub(f"[^{allow_str}]", "", record.seq)
