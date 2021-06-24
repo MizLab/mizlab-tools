@@ -6,7 +6,7 @@
 ## Installation
 
 ```sh
-pip install git+https://github.com/MizLab/mizlab-tools.git
+pip install git+https://github.com/MizLab/mizlab-tools.git@main
 ```
 
 ### Uninstall
@@ -22,6 +22,8 @@ pip uninstall mizlab-tools
 ```python
 import mizlab_tools
 ```
+
+See in [This](https://mizlab.github.io/mizlab-tools/)
 
 
 #### CLI commands
