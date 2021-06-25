@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import sys
 from pathlib import Path
 from typing import Iterable, Iterator
 
 from Bio import Entrez, SeqIO, SeqRecord
+
+from . import utils
 
 
 def fetch(accession_numbers: Iterable[str],
@@ -22,11 +23,8 @@ def fetch(accession_numbers: Iterable[str],
     """
     Entrez.email = email
     n_once = 1000
-    records = tuple(accession_numbers)
-    for i in range(0, len(records), n_once):
-        with Entrez.efetch(db="nucleotide",
-                           id=records[i:i + n_once],
-                           rettype="gb",
+    for accs in utils.split_per_n(accession_numbers, n=n_once):
+        with Entrez.efetch(db="nucleotide", id=accs, rettype="gb",
                            retmode="text") as handle:
             for r in SeqIO.parse(handle, "genbank"):
                 yield r
@@ -47,8 +45,6 @@ def main() -> None:
         help=
         "If set this property, information is stored into ./<-d>, else ./fetched_data/")
     args = parser.parse_args()
-
-    os.makedirs("fetched_data", exist_ok=True)
 
     if args.destination is None:
         dst = Path("fetched_data")
