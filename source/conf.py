@@ -60,8 +60,10 @@ html_static_path = ['_static']
 from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 
+source_suffix = [".rst", ".md", ".html"]
 source_parsers = {
     ".md": CommonMarkParser,
+    ".html": CommonMarkParser,
 }
 
 github_doc_root = "https://github.com/MizLab/mizlab-tools/tree/docs/docs/"

@@ -10,7 +10,7 @@ from Bio.SeqRecord import SeqRecord
 from mizlab_tools import gbk_utils
 
 
-def make_mock_record(seq: Seq = Seq("ATGC"),
+def make_mock_record(seq: Union[str, Seq] = Seq("ATGC"),
                      id: str = "mock_id",
                      name: Optional[str] = "mock_name",
                      description: Optional[str] = "mock_description",
@@ -31,6 +31,8 @@ def make_mock_record(seq: Seq = Seq("ATGC"),
     Returns:
         SeqRecord:
     """
+    if type(seq) == str:
+        seq = Seq(seq)
     return SeqRecord(seq=seq,
                      id=id,
                      name=name,
@@ -103,6 +105,16 @@ def test_window_search(source: Union[str, Seq], window_size: int,
                 assert len(windows[-i]) == i
 
 
+@pytest.mark.parametrize(("seq", "allowed", "expected"), [
+    ("ATGCATGC", "ATGC", True),
+    ("NNNNNN", "ATGC", False),
+    ("NNNNNN", "ATGCN", True),
+])
+def test_has_seq(seq: str, allowed: str, expected: bool):
+    mock = make_mock_record(seq=seq)
+    assert gbk_utils.has_seq(mock, allowed) == expected
+
+
 @pytest.mark.parametrize(("name", "expected"), [
     (None, False),
     ("", False),
@@ -121,6 +133,16 @@ def test_is_mongrel(name: Optional[str], expected: bool):
     assert gbk_utils.is_mongrel(mock) == expected
 
 
+@pytest.mark.parametrize(("source", "expected"), [
+    ("Homo sapiens mitochondrion, complete genome.", True),
+    ("Gecarcoidea natalis isolate GN2 mitochondrion, partial genome.", False),
+    ("Kudoa iwatai mitochondrion, chromosome 2, complete sequence.", False),
+    ("mitochondrion_genome, whole genome shotgun sequence.", False),
+])
+def test_is_complete_genome(source: str, expected: bool):
+    assert gbk_utils.is_complete_genome(source) == expected
+
+
 @pytest.mark.parametrize(
     ("source", "expected"),
     [("join(LVXP01042324.1:1..16300)", ("LVXP01042324", 0, 16300, False)),
@@ -136,3 +158,19 @@ def test_parse_contig(source: str, expected: Optional[Union[Tuple[str, int, int,
         key = ("accession", "start", "end", "is_complement")
         expected_dict = {k: v for k, v in zip(key, expected)}
         assert gbk_utils.parse_contig(source) == expected_dict
+
+
+@pytest.mark.parametrize(("contig", "expected"), [
+    (["a", "b", "c"], False),
+    (["contig"], True),
+    (None, False),
+])
+def test_has_contig(contig: Optional[List[str]], expected: bool):
+    if contig is not None:
+        annotations = {k: "" for k in contig}
+    else:
+        annotations = {}
+    mock = make_mock_record(annotations=annotations)
+    if contig is None:
+        delattr(mock, "annotations")
+    assert gbk_utils.has_contig(mock) == expected
