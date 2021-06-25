@@ -6,8 +6,8 @@ import os
 import sys
 from collections import deque
 from pathlib import Path
-from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional, Sequence,
-                    Tuple, Union)
+from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional,
+                    Sequence, Tuple, Union)
 from urllib.parse import ParseResult
 
 import requests
@@ -31,7 +31,7 @@ def fetch_taxon(records: Iterable[SeqRecord.SeqRecord],
     """
     taxon_info = {}
     for s in utils.split_per_n(records, n=n_once):
-        subrecords = tuple(records)
+        subrecords = tuple(s)
         taxon_ids = filter(lambda x: x is not None,
                            map(gbk_utils.get_taxonID, subrecords))
         binomial_names = tuple(
