@@ -1,6 +1,20 @@
+import re
+
 import pytest
 
 from mizlab_tools import calculate_weights
+
+
+@pytest.mark.parametrize(("seq", "allowd"), [
+    ("ATGCATGC", "ATGC"),
+    ("ATGCNNNN", "ATGC"),
+    ("hogehoge", "HOGE"),
+])
+def test_calc_weights(seq, allowd):
+    weights = calculate_weights.calc_weights(seq, allowd)
+    for k in weights.keys():
+        assert len(k) == 3
+        assert re.sub(f"[^{allowd}]", "", k) == k
 
 
 @pytest.mark.parametrize(("source", "expected"), [(("ATGC", ), ({"ATG": 1, "TGC": 1}))])
