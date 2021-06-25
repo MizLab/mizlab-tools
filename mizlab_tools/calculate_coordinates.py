@@ -4,64 +4,30 @@ import argparse
 import json
 import os
 import re
-
-try:
-    from typing import Literal
-except ImportError:
-    from typing_extensions import Literal
-
-from typing import (Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar,
-                    Union)
+from typing import Dict, List, Optional, Union
 
 from Bio import SeqIO, SeqRecord
 
-OVERHANG = Literal["before", "after", "both"]
-T = TypeVar("T")
+from . import gbk_utils
 
 
-def window_search(target: Iterable[T],
-                  size: int,
-                  overhang: Optional[OVERHANG] = None) -> Iterator[Tuple[T, ...]]:
-    """Iteration with window.
-
-    Args:
-        target (Iterable[T]): Target Iterable object.
-        size (int): Size of window.
-        overhang (Optional[OVERHANG]): overhang. must in {"before", "after", "both"}
-
-    Returns:
-        Iterator[Tuple[T, ...]]: Window.
-    """
-    fixed_target = tuple(target)
-
-    if overhang == "before" or overhang == "both":
-        for i in range(1, size):
-            yield fixed_target[:i]
-
-    for i in range(len(fixed_target) - size + 1, ):
-        yield fixed_target[i:i + size]
-
-    if overhang == "after" or overhang == "both":
-        for i in range(len(fixed_target) - size + 1, len(fixed_target)):
-            yield fixed_target[i:]
-
-
-def factory(record: SeqRecord.SeqRecord,
-            mapping: Dict[str, List[int]],
-            weight: Optional[Dict[str, Union[int, float]]] = None) -> List[List[float]]:
-    """Calculate with mapping and weight.
+def calc_coord(
+        record: SeqRecord.SeqRecord,
+        mapping: Dict[str, List[int]],
+        weight: Optional[Dict[str, Union[int, float]]] = None) -> List[List[float]]:
+    """calculate coordinates with mapping of vencor to base.
 
     Args:
-        record (SeqRecord.SeqRecord): SeqRecord.
-        mapping (Dict[str, List[int]]): Mapping of vector to base.
-        weight (Optional[Dict[str, Union[int, float]]]): weights.
+        record (SeqRecord.SeqRecord): record
+        mapping (Dict[str, List[int]]): mapping of vector
+        weight (Optional[Dict[str, Union[int, float]]]): weight of some base combi.
 
     Returns:
-        List[List[float]]:
+        List[List[float]]: result of calculation.
     """
     allow_str = "".join(mapping.keys())
 
-    filterd_seq = re.sub(f"[^{allow_str}]", "", record.seq)
+    filterd_seq = re.sub(f"[^{allow_str}]", "", str(record.seq))
 
     dimension = 0    # default value, it will be rewrited
     for v in mapping.values():
@@ -72,8 +38,8 @@ def factory(record: SeqRecord.SeqRecord,
         weight = {}
 
     coordinates = [[0. for _ in range(dimension)]]
-    for t in window_search(filterd_seq, 3, overhang="both"):
-        triplet = "".join(t)
+    for window in gbk_utils.window_search(filterd_seq, 3, overhang="before"):
+        triplet = "".join(map(str, window))
         rate = weight.get(triplet, 1.0)
         vector = list(map(lambda x: x * rate, mapping[triplet[-1]]))
         coordinates.append([a + b for a, b in zip(coordinates[-1], vector)])
@@ -81,7 +47,14 @@ def factory(record: SeqRecord.SeqRecord,
     return coordinates
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """main.
+
+    Args:
+
+    Returns:
+        None:
+    """
     parser = argparse.ArgumentParser(
         description="Calculate dna data to coordinate. output stdout or file")
     parser.add_argument("gbkfiles", nargs="+", help="GBK format file path.")
@@ -114,7 +87,7 @@ if __name__ == "__main__":
         os.makedirs(args.destination, exist_ok=True)
     for gbk in args.gbkfiles:
         for record in SeqIO.parse(gbk, "genbank"):
-            data = factory(record, mapping, weight)
+            data = calc_coord(record, mapping, weight)
             if destination is not None:
                 with open(f"{destination}/{record.name}.dat", "w") as f:
                     for d in data:
@@ -122,3 +95,7 @@ if __name__ == "__main__":
             else:
                 for d in data:
                     print(" ".join(map(str, d)))
+
+
+if __name__ == "__main__":
+    main()
