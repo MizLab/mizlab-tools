@@ -289,3 +289,5 @@ tags
 #!! ERROR: bash is undefined. Use list command to see defined gitignore types !!#
 
 # End of https://www.toptal.com/developers/gitignore/api/bash
+#
+source/mizlab_tools
