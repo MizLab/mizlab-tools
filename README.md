@@ -104,3 +104,41 @@ This library provide some CLI commands.
                                 If set this property, information is stored into
                                 ./<-d>, else stdout.
         ```
+- `calculate_weights`
+    ```
+    usage: calculate_weights.py [-h] [-d DESTINATION] [--allow_chars ALLOW_CHARS]
+                                gbkfiles [gbkfiles ...]
+
+    Calculate 3 words weight, based on frequency of appearance.
+
+    positional arguments:
+      gbkfiles              Genbank format file paths.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d DESTINATION, --destination DESTINATION
+                            if set this option, the weight save into
+                            <destination>/weight.json, else $PWD/weight.json.
+      --allow_chars ALLOW_CHARS
+                            allowed chars.
+    ```
+
+- `calculate_coordinates`
+    ```
+    usage: calculate_coordinates.py [-h] [--weight WEIGHT] --mapping MAPPING
+                                    [-d DESTINATION]
+                                    gbkfiles [gbkfiles ...]
+
+    Calculate dna data to coordinate. output stdout or file
+
+    positional arguments:
+      gbkfiles              GBK format file path.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --weight WEIGHT       The json format weight file.
+      --mapping MAPPING     The json format vector mapping file.
+      -d DESTINATION, --destination DESTINATION
+                            if set this option, the data is store to
+                            <destination>/<accession>.dat
+    ```
