@@ -291,3 +291,7 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/bash
 #
 source/mizlab_tools
+
+# use some python vesion in CI/CD. 
+# if exists Pipfile.lock, cannot work well it.
+Pipfile.lock
