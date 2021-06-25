@@ -29,7 +29,7 @@ def calc_weights(sequences: Iterable[Union[str, Seq.Seq]],
     for sequence in sequences:
         counter += count_words(sequence, allowed, 3)
 
-    weights: Dict[str, float] = compute_self_entropy(counter, allowed)
+    weights: Dict[str, Float64] = compute_self_entropy(counter, allowed)
     return weights
 
 
