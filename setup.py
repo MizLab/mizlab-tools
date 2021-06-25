@@ -30,7 +30,9 @@ setup(
     entry_points={
         "console_scripts": [
             "fetch_gbk = mizlab_tools.fetch_gbk:main",
-            "fetch_taxon = mizlab_tools.fetch_taxon:main"
+            "fetch_taxon = mizlab_tools.fetch_taxon:main",
+            "calculate_coordinates = mizlab_tools.calculate_coordinates:main",
+            "calculate_weights = mizlab_tools.calculate_weights:main"
         ]
     },
     python_requires=">=3.6.1",
