@@ -28,7 +28,7 @@ See in [This docment](https://mizlab.github.io/mizlab-tools/).
 
 #### CLI commands
 
-This library provide some CLI commands. 
+This library provide some CLI commands.
 
 - `fetch_gbk`
     ```
@@ -142,3 +142,6 @@ This library provide some CLI commands.
                             if set this option, the data is store to
                             <destination>/<accession>.dat
     ```
+
+## Requirements
+    - `Python` >= 3.6.1
