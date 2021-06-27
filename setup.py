@@ -25,8 +25,16 @@ setup(
         "nptyping",
         "numpy",
     ],
-    packages=find_packages(exclude=("tests", "docs")),
-    tests_require=["pytest", "pytest-runner"],
+    packages=find_packages(exclude=(
+        "tests",
+        "docs",
+        "source",
+    )),
+    tests_require=[
+        "pytest",
+        "pytest-runner",
+        "pytest-cov",
+    ],
     entry_points={
         "console_scripts": [
             "fetch_gbk = mizlab_tools.fetch_gbk:main",
