@@ -1,0 +1,61 @@
+mizlab\_tools package
+=====================
+
+Submodules
+----------
+
+mizlab\_tools.calculate\_coordinates module
+-------------------------------------------
+
+.. automodule:: mizlab_tools.calculate_coordinates
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mizlab\_tools.calculate\_weights module
+---------------------------------------
+
+.. automodule:: mizlab_tools.calculate_weights
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mizlab\_tools.fetch\_gbk module
+-------------------------------
+
+.. automodule:: mizlab_tools.fetch_gbk
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mizlab\_tools.fetch\_taxon module
+---------------------------------
+
+.. automodule:: mizlab_tools.fetch_taxon
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mizlab\_tools.gbk\_utils module
+-------------------------------
+
+.. automodule:: mizlab_tools.gbk_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+mizlab\_tools.utils module
+--------------------------
+
+.. automodule:: mizlab_tools.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: mizlab_tools
+   :members:
+   :undoc-members:
+   :show-inheritance:
