@@ -295,3 +295,5 @@ source/mizlab_tools
 # use some python vesion in CI/CD. 
 # if exists Pipfile.lock, cannot work well it.
 Pipfile.lock
+
+fetched_data/NC_012920.gbk
