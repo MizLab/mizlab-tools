@@ -72,13 +72,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Calculate 3 words weight, based on frequency of appearance.")
     parser.add_argument("gbkfiles", nargs="+", help="Genbank format file paths.")
-    parser.add_argument(
-        "-d",
-        "--destination",
-        help=
-        "if set this option, the weight save into <destination>/weight.json, else $PWD/weight.json."
-    )
-    parser.add_argument("--allow_chars", default="ATGC", help="allowed chars.")
+    parser.add_argument("-d",
+                        "--destination",
+                        help="""
+        destination of output, like `./destination/weights.json.`
+        if this option is not given, show weights in stdout.
+        """)
+    parser.add_argument("--allowed_chars", default="ATGC", help="allowed chars.")
 
     args = parser.parse_args()
 
@@ -87,7 +87,7 @@ def main() -> None:
         for record in SeqIO.parse(p, "genbank"):
             sequences.append(record.seq)
 
-    weights = calc_weights(sequences, args.allow_chars)
+    weights = calc_weights(sequences, args.allowed_chars)
     weight_for_output: Dict[str, float] = {k: float(v) for k, v in weights.items()}
 
     if args.destination is not None:
