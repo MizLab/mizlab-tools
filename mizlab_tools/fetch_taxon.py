@@ -6,9 +6,8 @@ import os
 import sys
 from collections import deque
 from pathlib import Path
-from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional,
-                    Sequence, Tuple, Union)
-from urllib.parse import ParseResult
+from typing import (Any, Deque, Dict, Iterable, Iterator, List, Literal,
+                    Optional, Sequence, Tuple, Union)
 
 import requests
 from Bio import Entrez, SeqIO, SeqRecord
@@ -228,6 +227,24 @@ def _filename_and_search_key(
                 raise ValueError
             yield record.name, key
 
+
+def _fetch_all(args: argparse.Namespace) -> None:
+    records = []
+    for f in args.gbkfiles:
+        for record in SeqIO.parse(f, "genbank"):
+            records.append(record)
+    results = fetch_taxon(records, email=args.email)
+
+    dst = Path()
+    if args.destination is not None:
+        dst = Path(args.destination)
+        dst.mkdir(parents=True, exist_ok=True)
+        with open(dst / "result.json", "w") as f:
+            json.dump(results, f)
+    else:
+        print(json.dumps(results, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch taxonomy information.")
     subparser = parser.add_subparsers()
@@ -255,6 +272,18 @@ def main() -> None:
         help="If set this property, information is stored into ./<-d>, else stdout.")
     parser_gnr.add_argument("binomial_names", nargs="+", help="binomial names")
     parser_gnr.set_defaults(hander=_fetch_gnr)
+
+    parser_all = subparser.add_parser("all", help="Fetch from NCBI and GNR.")
+    parser_all.add_argument("--email",
+                            required=True,
+                            help="your e-mail address to fetch data. (required)")
+    parser_all.add_argument("--stdin", action="store_true", help="use stdin.")
+    parser_all.add_argument(
+        "-d",
+        "--destination",
+        help="If set this property, information is stored into ./<-d>, else stdout.")
+    parser_all.add_argument("gbkfiles", nargs="+", help="Path of Genbank from data.")
+    parser_all.set_defaults(hander=_fetch_all)
 
     args = parser.parse_args()
     if hasattr(args, "hander"):
