@@ -181,7 +181,7 @@ def _fetch_ncbi(args: argparse.Namespace) -> None:
         taxon_ids = [line.strip() for line in sys.stdin.readlines()]
         output_names = taxon_ids
     else:
-        output_names, taxon_ids = args.taxon_ids, args.taxon_ids
+        output_names, taxon_ids = args.taxonomy_ids, args.taxonomy_ids
 
     for taxonid, record in zip(output_names,
                                fetch_taxon_from_NCBI(taxon_ids, args.email)):
