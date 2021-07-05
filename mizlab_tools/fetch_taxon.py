@@ -11,7 +11,7 @@ from typing import (Any, Deque, Dict, Iterable, Iterator, List, Optional,
 from urllib.parse import ParseResult
 
 import requests
-from Bio import Entrez, SeqRecord
+from Bio import Entrez, SeqIO, SeqRecord
 
 from . import gbk_utils, utils
 
@@ -169,6 +169,12 @@ def _fetch_ncbi(args: argparse.Namespace) -> None:
         dst = Path(args.description)
         dst.mkdir(parents=True, exist_ok=True)
 
+    if args.gbk:
+        output_names, taxon_ids = _filename_and_search_key(args.taxonomy_ids,
+                                                           "taxon_id")
+    else:
+        output_names, taxon_ids = zip(args.taxon_ids, args.taxon_ids)
+
     for taxonid, record in zip(args.taxonomy_ids,
                                fetch_taxon_from_NCBI(args.taxonomy_ids, args.email)):
         if args.destination is not None:
@@ -191,14 +197,36 @@ def _fetch_gnr(args: argparse.Namespace) -> None:
     if args.destination is not None:
         dst = Path(args.destination)
         dst.mkdir(parents=True, exist_ok=True)
-    for binomial_name, record in zip(args.binomial_names,
-                                     fetch_taxon_from_GNR(args.binomial_names)):
+
+    if args.gbk:
+        output_names, binomial_names = _filename_and_search_key(
+            args.binomial_names, "binomial_name")
+    else:
+        output_names, binomial_names = zip(args.binomial_names, args.binomial_names)
+
+    for output_name, record in zip(output_names, fetch_taxon_from_GNR(binomial_names)):
         if args.destination is not None:
-            with open(str(dst / f"{binomial_name}.json"), "w") as f:
+            with open(str(dst / f"{output_name}.json"), "w") as f:
                 json.dump(record, f)
         else:
             print(json.dumps(record, indent=2))
 
+
+def _filename_and_search_key(
+    gbk: gbk_utils.Openable,
+    search_key: Literal["taxon_id", "binomial_name"],
+) -> Iterator[Tuple[str, str]]:
+    for record in SeqIO.parse(gbk, "genbank"):
+        if search_key == "taxon_id":
+            key = gbk_utils.get_taxonID(record)
+            if key is None:
+                raise ValueError
+            yield record.name, key
+        else:
+            key = gbk_utils.get_creature_name(record)
+            if key is None:
+                raise ValueError
+            yield record.name, key
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch taxonomy information.")
@@ -207,25 +235,25 @@ def main() -> None:
     parser_ncbi.add_argument("--email",
                              required=True,
                              help="your e-mail address to fetch data. (required)")
-    parser_ncbi.add_argument("--stdin",
+    parser_ncbi.add_argument("--stdin", action="store_true", help="use stdin.")
+    parser_ncbi.add_argument("--gbk",
                              action="store_true",
-                             help="if you want to use stdin, use this flag.")
+                             help="use Genbank form data.")
     parser_ncbi.add_argument(
         "-d",
         "--destination",
         help="If set this property, information is stored into ./<-d>, else stdout.")
-    parser_ncbi.add_argument("taxonomy_ids", nargs="*", help="taxonomy ids")
+    parser_ncbi.add_argument("taxonomy_ids", nargs="+", help="taxonomy ids")
     parser_ncbi.set_defaults(hander=_fetch_ncbi)
 
     parser_gnr = subparser.add_parser("gnr", help="Fetch from Global Names Resolver")
-    parser_gnr.add_argument("--stdin",
-                            action="store_true",
-                            help="if you want to use stdin, use this flag.")
+    parser_gnr.add_argument("--stdin", action="store_true", help="use stdin.")
+    parser_gnr.add_argument("--gbk", action="store_true", help="use Genbank form data.")
     parser_gnr.add_argument(
         "-d",
         "--destination",
         help="If set this property, information is stored into ./<-d>, else stdout.")
-    parser_gnr.add_argument("binomial_names", nargs="*", help="binomial names")
+    parser_gnr.add_argument("binomial_names", nargs="+", help="binomial names")
     parser_gnr.set_defaults(hander=_fetch_gnr)
 
     args = parser.parse_args()
