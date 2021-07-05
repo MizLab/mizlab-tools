@@ -171,11 +171,20 @@ def _fetch_ncbi(args: argparse.Namespace) -> None:
     if args.gbk:
         output_names, taxon_ids = _filename_and_search_key(args.taxonomy_ids,
                                                            "taxon_id")
+    elif args.stdin and sys.stdin.isatty():
+        # by keyboard input
+        n_ids = int(input("Number of Taxon IDs? : "))
+        taxon_ids = [input(f"{i+1} : ") for i in range(n_ids)]
+        output_names = taxon_ids
+    elif args.stdin:
+        # by pipe
+        taxon_ids = [line.strip() for line in sys.stdin.readlines()]
+        output_names = taxon_ids
     else:
-        output_names, taxon_ids = zip(args.taxon_ids, args.taxon_ids)
+        output_names, taxon_ids = args.taxon_ids, args.taxon_ids
 
-    for taxonid, record in zip(args.taxonomy_ids,
-                               fetch_taxon_from_NCBI(args.taxonomy_ids, args.email)):
+    for taxonid, record in zip(output_names,
+                               fetch_taxon_from_NCBI(taxon_ids, args.email)):
         if args.destination is not None:
             with open(str(dst / f"{taxonid}.json"), "w") as f:
                 json.dump(record, f)
@@ -200,8 +209,17 @@ def _fetch_gnr(args: argparse.Namespace) -> None:
     if args.gbk:
         output_names, binomial_names = _filename_and_search_key(
             args.binomial_names, "binomial_name")
+    elif args.stdin and sys.stdin.isatty():
+        # by keyboard
+        n_names = int(input("Number of names? : "))
+        binomial_names = [input(f"{i+1 : }") for i in range(n_names)]
+        output_names = binomial_names
+    elif args.stdin:
+        # by pipe
+        binomial_names = [line.strip() for line in sys.stdin.readlines()]
+        output_names = binomial_names
     else:
-        output_names, binomial_names = zip(args.binomial_names, args.binomial_names)
+        output_names, binomial_names = args.binomial_names, args.binomial_names
 
     for output_name, record in zip(output_names, fetch_taxon_from_GNR(binomial_names)):
         if args.destination is not None:
@@ -230,7 +248,17 @@ def _filename_and_search_key(
 
 def _fetch_all(args: argparse.Namespace) -> None:
     records = []
-    for f in args.gbkfiles:
+    if len(args.gbkfiles) > 0:
+        paths = args.gbkfiles
+    elif args.stdin and sys.stdin.isatty():
+        # by keyboard
+        n_paths = int(input("Number of paths? : "))    # necessary ?
+        paths = [input(f"{i+1 : }") for i in range(n_paths)]
+    else:
+        # by pipe
+        paths = [line.strip() for line in sys.stdin.readlines()]
+
+    for f in paths:
         for record in SeqIO.parse(f, "genbank"):
             records.append(record)
     results = fetch_taxon(records, email=args.email)
@@ -260,7 +288,7 @@ def main() -> None:
         "-d",
         "--destination",
         help="If set this property, information is stored into ./<-d>, else stdout.")
-    parser_ncbi.add_argument("taxonomy_ids", nargs="+", help="taxonomy ids")
+    parser_ncbi.add_argument("taxonomy_ids", nargs="*", help="taxonomy ids")
     parser_ncbi.set_defaults(hander=_fetch_ncbi)
 
     parser_gnr = subparser.add_parser("gnr", help="Fetch from Global Names Resolver")
@@ -270,7 +298,7 @@ def main() -> None:
         "-d",
         "--destination",
         help="If set this property, information is stored into ./<-d>, else stdout.")
-    parser_gnr.add_argument("binomial_names", nargs="+", help="binomial names")
+    parser_gnr.add_argument("binomial_names", nargs="*", help="binomial names")
     parser_gnr.set_defaults(hander=_fetch_gnr)
 
     parser_all = subparser.add_parser("all", help="Fetch from NCBI and GNR.")
@@ -282,7 +310,7 @@ def main() -> None:
         "-d",
         "--destination",
         help="If set this property, information is stored into ./<-d>, else stdout.")
-    parser_all.add_argument("gbkfiles", nargs="+", help="Path of Genbank from data.")
+    parser_all.add_argument("gbkfiles", nargs="*", help="Path of Genbank from data.")
     parser_all.set_defaults(hander=_fetch_all)
 
     args = parser.parse_args()
