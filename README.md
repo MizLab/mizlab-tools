@@ -221,7 +221,7 @@ This library provide some CLI commands.
     Calculate weight of 3 bases.
 
     ```sh
-    calculate_weights path/of/gbk/file ...
+    calculate_weights path/to/gbk/file ...
     ```
 
     show calculated weights like
@@ -241,6 +241,24 @@ This library provide some CLI commands.
     `--destination foo` is given, calculated weights dumped at `./foo/weights.json`.
 
 - `calculate_coordinates`
+
+    Translate DNA to graph coordinates.
+
+    ```sh
+    calculate_coordinates --mapping path/to/mapping.json --weight path/to/weights.json path/to/gbkfile ...
+    ```
+
+    after exec, show coordinates in stdout.
+
+    if you want to dump coordinates, use `--destination`.
+
+    ```sh
+    calculate_coordinates --mapping path/to/mapping.json --weight path/to/weights.json --destination ./outputs NC_012920.gbk
+    ```
+
+    the coordinate dumped at `./outputs/NC_012920.dat`
+
+
 
 
 ## Requirements
