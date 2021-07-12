@@ -46,9 +46,9 @@ def fetch_taxon(records: Iterable[SeqRecord.SeqRecord],
                 "taxon": {
                     **{
                         "NCBI Taxonomy": res_ncbi.copy()
-                    }
-                },
-                **res_gnr
+                    },
+                    **res_gnr
+                }
             }
         taxon_info.update(sub_results)
     return taxon_info
